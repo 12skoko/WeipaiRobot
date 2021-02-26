@@ -40,7 +40,6 @@ class Weipaiing():
         print(rstr)
         return rstr
 
-
 app = Flask(__name__)
 
 
