@@ -161,13 +161,14 @@ class Weipai(WeipaiedState, WeipaiingState):
         self.TTmenustate = 0
         self.rdata = [0, '', '']
         self.admin = ['wxid_4v6rvyeygzfq22', 'wxid_z7m0kb9jpeeh22']
-        self.chatroom = '19753618745@chatroom'
+        self.chatroom = '3024499764@chatroom'
+        # self.chatroom = '19753618745@chatroom'
 
         WeipaiedState.__init__(self)
         WeipaiingState.__init__(self)
 
     def rpost(self):
-        if type(self.rdata[0])!=type([]):
+        if type(self.rdata[0]) != type([]):
             if self.rdata[0] == 0:
                 data2 = {"type": 106, "user_id": self.rdata[1], "message": self.rdata[2], "msg_type": 1,
                          "robot_id": "wxid_11pq0tkx9xk922",
@@ -180,7 +181,7 @@ class Weipai(WeipaiedState, WeipaiingState):
                 rpoststr = json.dumps(data3, ensure_ascii=False).encode("utf-8")
             return rpoststr
         else:
-            rpoststr=[]
+            rpoststr = []
             for i in self.rdata:
                 if i[0] == 0:
                     data2 = {"type": 106, "user_id": i[1], "message": i[2], "msg_type": 1,
@@ -254,7 +255,8 @@ class Weipai(WeipaiedState, WeipaiingState):
                     self.worksstate = self.works
                     for i in self.worksstate:
                         i.append('')
-                    self.rdata = [[0, self.chatroom, '拍卖开始！'],[0, cbdata['final_from_wxid'], '拍卖开始'],[0, self.chatroom, self.BiddingMsgShow()]]
+                    self.rdata = [[0, self.chatroom, '拍卖开始！'], [0, cbdata['final_from_wxid'], '拍卖开始'],
+                                  [0, self.chatroom, self.BiddingMsgShow()]]
                     return 1
                 elif cbdata['msg'] == '1':
                     self.TTmenustate = 0
@@ -265,7 +267,8 @@ class Weipai(WeipaiedState, WeipaiingState):
             else:
                 return 0
         elif self.state == 1 and cbdata['final_from_wxid'] in self.admin and cbdata['msg'] == '成交':
-            self.rdata = [[0, self.chatroom, self.BiddingMsgShow()],[0, self.chatroom, '本次拍卖结束，感谢大家参与'],[0, cbdata['final_from_wxid'], '拍卖结束'],[0, cbdata['final_from_wxid'], self.BiddingMsgShow()]]
+            self.rdata = [[0, self.chatroom, self.BiddingMsgShow()], [0, self.chatroom, '本次拍卖结束，感谢大家参与'],
+                          [0, cbdata['final_from_wxid'], '拍卖结束'], [0, cbdata['final_from_wxid'], self.BiddingMsgShow()]]
             self.worksstate = []
             self.worksstate = []
             self.works = []
