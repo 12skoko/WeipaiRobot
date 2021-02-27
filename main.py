@@ -14,11 +14,20 @@ class WeipaiingState():
         self.worksstate2 = self.worksstate
 
     def ProcessingBiddingMsg(self, input):
-        msg_re = re.compile('(私信?)?(\d+)[号\.+、，,:：。加 ]+(\d{2,})')
+        msg_re = re.compile('(私信?)?(\d+)[号\.+＋十、，,:：。_加 ]+(\d{2,})')
+        atmsg_re = re.compile('\[@at,nickname=(.*?),wxid=(.*?)\]')
         try:
             msg_search = re.findall(msg_re, input[0])
         except:
             return -1
+        if input[1] == '两江画院':
+            atmsg_search = None
+            try:
+                atmsg_search = re.search(atmsg_re, input[0])
+            except:
+                pass
+            if atmsg_search != None:
+                input[1] = atmsg_search[1]
         f = len(msg_search)
         worksstatetemp = self.worksstate2
         self.worksstate2 = self.worksstate
@@ -28,7 +37,7 @@ class WeipaiingState():
                 continue
             self.worksstate[int(i[1]) - 1][2] = int(i[2]) + self.worksstate[int(i[1]) - 1][2]
             if i[0] != '':
-                self.worksstate[int(i[1]) - 1][3] = '匿名'
+                self.worksstate[int(i[1]) - 1][3] = '私信'
             else:
                 self.worksstate[int(i[1]) - 1][3] = input[1]
         if f == 0:
@@ -38,11 +47,10 @@ class WeipaiingState():
         return 0
 
     def BiddingMsgShow(self):
-        rstr = '--本次拍品--\n'
+        rstr = '--本次拍品--\n出价方式为阶梯出价，不报总价。\n加价格式：1加xx,1+xx,1号xx\n\n'
         for i in self.worksstate:
             stemp = str(i[0]) + ':' + i[1] + '。' + str(i[2]) + '元，' + i[3] + '\n'
             rstr += stemp
-        print(rstr)
         return rstr
 
 
@@ -160,9 +168,9 @@ class Weipai(WeipaiedState, WeipaiingState):
         self.state = 0  # 0 未拍卖  # 1 正在拍卖
         self.TTmenustate = 0
         self.rdata = [0, '', '']
-        self.admin = ['wxid_4v6rvyeygzfq22', 'wxid_z7m0kb9jpeeh22']
-        self.chatroom = '3024499764@chatroom'
-        # self.chatroom = '19753618745@chatroom'
+        self.admin = ['wxid_2zjxs3mstzcl22','wxid_4v6rvyeygzfq22','wxid_x0wbwe46exmy21']
+        # self.chatroom = '3024499764@chatroom'
+        self.chatroom = '19753618745@chatroom'
 
         WeipaiedState.__init__(self)
         WeipaiingState.__init__(self)
@@ -231,7 +239,6 @@ class Weipai(WeipaiedState, WeipaiingState):
                         return 0
                     elif flag == 0:
                         self.rdata = [0, cbdata['final_from_wxid'], self.EDmenu()]
-                        print(self.EDmenu())
                         return 1
                     elif flag == 1:
                         self.TTmenustate = 0
@@ -267,8 +274,8 @@ class Weipai(WeipaiedState, WeipaiingState):
             else:
                 return 0
         elif self.state == 1 and cbdata['final_from_wxid'] in self.admin and cbdata['msg'] == '成交':
-            self.rdata = [[0, self.chatroom, self.BiddingMsgShow()], [0, self.chatroom, '本次拍卖结束，感谢大家参与'],
-                          [0, cbdata['final_from_wxid'], '拍卖结束'], [0, cbdata['final_from_wxid'], self.BiddingMsgShow()]]
+            self.rdata = [[0, 'wxid_x0wbwe46exmy21', self.BiddingMsgShow()], [0, self.chatroom, '本次拍卖结束，感谢大家参与！'],
+                          [0, cbdata['final_from_wxid'], '拍卖结束'], [0, 'wxid_2zjxs3mstzcl22', self.BiddingMsgShow()]]
             self.worksstate = []
             self.worksstate = []
             self.works = []
