@@ -168,10 +168,11 @@ class Weipai(WeipaiedState, WeipaiingState):
         self.state = 0  # 0 未拍卖  # 1 正在拍卖
         self.TTmenustate = 0
         self.rdata = [0, '', '']
-        self.admin = ['wxid_2zjxs3mstzcl22','wxid_4v6rvyeygzfq22','wxid_x0wbwe46exmy21']
-        # self.chatroom = '3024499764@chatroom'
-        self.chatroom = '19753618745@chatroom'
-
+        # self.admin = ['wxid_2zjxs3mstzcl22','wxid_4v6rvyeygzfq22','wxid_x0wbwe46exmy21']
+        self.admin = ['wxid_2zjxs3mstzcl22', 'wxid_x0wbwe46exmy21']
+        self.chatroom = '3024499764@chatroom'
+        # self.chatroom = '19753618745@chatroom'
+        self.chatroomg = ['19753618745@chatroom','3024499764@chatroom','80916718@chatroom']
         WeipaiedState.__init__(self)
         WeipaiingState.__init__(self)
 
@@ -281,8 +282,6 @@ class Weipai(WeipaiedState, WeipaiingState):
             self.works = []
             self.state = 0
             return 1
-
-
         elif self.state == 1:
             input = [cbdata['msg'], cbdata['final_from_name']]
             flag = self.ProcessingBiddingMsg(input)
@@ -292,6 +291,13 @@ class Weipai(WeipaiedState, WeipaiingState):
                 self.rdata = [0, self.chatroom, self.BiddingMsgShow()]
                 return 1
             return 0
+        elif cbdata['type'] == '410' and cbdata['from_wxid'] in self.chatroomg:
+            mem_re = re.compile('"member_nickname":"(.*?)".*?"group_name":"(.*?)"')
+            mem_search = re.search(mem_re, cbdata['msg'])
+            rstr = mem_search[1] + '退出' + mem_search[2]
+            self.rdata = [[0, 'wxid_x0wbwe46exmy21', rstr], [0, 'wxid_2zjxs3mstzcl22', rstr]]
+            return 1
+
         else:
             return 0
 
