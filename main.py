@@ -11,16 +11,23 @@ import re
 class WeipaiingState():
     def __init__(self):
         self.worksstate = []
-        self.worksstate2 = self.worksstate
+        self.adminname = ['两江画院', '最爱']
 
     def ProcessingBiddingMsg(self, input):
         msg_re = re.compile('(私信?)?(\d+)[号\.+＋十、，,:：。_加 ]+(\d{2,})')
         atmsg_re = re.compile('\[@at,nickname=(.*?),wxid=(.*?)\]')
+        url_re = re.compile('http')
+        try:
+            url_search = re.search(url_re, input[0])
+        except:
+            return -1
+        if url_search != None:
+            return -1
         try:
             msg_search = re.findall(msg_re, input[0])
         except:
             return -1
-        if input[1] == '两江画院':
+        if input[1] in self.adminname:
             atmsg_search = None
             try:
                 atmsg_search = re.search(atmsg_re, input[0])
@@ -29,8 +36,7 @@ class WeipaiingState():
             if atmsg_search != None:
                 input[1] = atmsg_search[1]
         f = len(msg_search)
-        worksstatetemp = self.worksstate2
-        self.worksstate2 = self.worksstate
+        print(msg_search)
         for i in msg_search:
             if int(i[1]) > len(self.worksstate) or int(i[1]) < 1 or int(i[2]) <= 0:
                 f -= 1
@@ -41,9 +47,23 @@ class WeipaiingState():
             else:
                 self.worksstate[int(i[1]) - 1][3] = input[1]
         if f == 0:
-            self.worksstate2 = worksstatetemp
-            print('Null')
             return -1
+        return 0
+
+    def Changeworksstate(self, input):
+        msg_re = re.compile('(\d+)[,，](\d+)[,，]([^,，]*)')
+        try:
+            msg_search = re.findall(msg_re, input)
+        except:
+            return -1
+        if msg_search == []:
+            return -1
+        print(msg_search)
+        print(self.worksstate)
+        for i in msg_search:
+            self.worksstate[int(i[0]) - 1][2] = i[1]
+            self.worksstate[int(i[0]) - 1][3] = i[2]
+        print(self.worksstate)
         return 0
 
     def BiddingMsgShow(self):
@@ -168,11 +188,12 @@ class Weipai(WeipaiedState, WeipaiingState):
         self.state = 0  # 0 未拍卖  # 1 正在拍卖
         self.TTmenustate = 0
         self.rdata = [0, '', '']
-        # self.admin = ['wxid_2zjxs3mstzcl22','wxid_4v6rvyeygzfq22','wxid_x0wbwe46exmy21']
-        self.admin = ['wxid_2zjxs3mstzcl22', 'wxid_x0wbwe46exmy21']
-        self.chatroom = '3024499764@chatroom'
-        # self.chatroom = '19753618745@chatroom'
-        self.chatroomg = ['19753618745@chatroom','3024499764@chatroom','80916718@chatroom']
+        self.admin = ['wxid_2zjxs3mstzcl22', 'wxid_4v6rvyeygzfq22', 'wxid_x0wbwe46exmy21']
+        # self.admin = ['wxid_2zjxs3mstzcl22', 'wxid_x0wbwe46exmy21']
+
+        # self.chatroom = '3024499764@chatroom'
+        self.chatroom = '19753618745@chatroom'
+        self.chatroomg = ['19753618745@chatroom', '3024499764@chatroom', '80916718@chatroom']
         WeipaiedState.__init__(self)
         WeipaiingState.__init__(self)
 
@@ -277,27 +298,35 @@ class Weipai(WeipaiedState, WeipaiingState):
         elif self.state == 1 and cbdata['final_from_wxid'] in self.admin and cbdata['msg'] == '成交':
             self.rdata = [[0, 'wxid_x0wbwe46exmy21', self.BiddingMsgShow()], [0, self.chatroom, '本次拍卖结束，感谢大家参与！'],
                           [0, cbdata['final_from_wxid'], '拍卖结束'], [0, 'wxid_2zjxs3mstzcl22', self.BiddingMsgShow()]]
+            # self.rdata = [[0, self.chatroom, '本次拍卖结束，感谢大家参与！'],
+                          # [0, cbdata['final_from_wxid'], '拍卖结束']]
             self.worksstate = []
             self.worksstate = []
             self.works = []
             self.state = 0
             return 1
-        elif self.state == 1:
+        elif self.state == 1 and cbdata['type'] == '200':
             input = [cbdata['msg'], cbdata['final_from_name']]
             flag = self.ProcessingBiddingMsg(input)
-            if flag == -1:
-                return 0
-            elif flag == 0:
+            if flag == 0:
                 self.rdata = [0, self.chatroom, self.BiddingMsgShow()]
                 return 1
-            return 0
+            else:
+                return 0
+        elif self.state == 1 and cbdata['type'] == '100' and cbdata['final_from_wxid'] in self.admin:
+            flag = self.Changeworksstate(cbdata['msg'])
+            if flag == 0:
+                self.rdata = [[0, self.chatroom, self.BiddingMsgShow()], [0, cbdata['final_from_wxid'], '修改成功']]
+                return 1
+            else:
+                return 0
+
         elif cbdata['type'] == '410' and cbdata['from_wxid'] in self.chatroomg:
             mem_re = re.compile('"member_nickname":"(.*?)".*?"group_name":"(.*?)"')
             mem_search = re.search(mem_re, cbdata['msg'])
             rstr = mem_search[1] + '退出' + mem_search[2]
             self.rdata = [[0, 'wxid_x0wbwe46exmy21', rstr], [0, 'wxid_2zjxs3mstzcl22', rstr]]
             return 1
-
         else:
             return 0
 
