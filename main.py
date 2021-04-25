@@ -15,7 +15,7 @@ class WeipaiingState():
         self.blackname = ['吴小钢']
 
     def ProcessingBiddingMsg(self, input):
-        msg_re = re.compile('(私信?)?(\d+)[号\.+＋十、，,:：。_加 ]+(\d{2,})')
+        msg_re = re.compile('(私信?)?(\d+)[号\.+＋十、，,:：。_加 ]+(\d{1,}0)')
         atmsg_re = re.compile('\[@at,nickname=(.*?),wxid=(.*?)\]')
         url_re = re.compile('http')
         try:
