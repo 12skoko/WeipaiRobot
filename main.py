@@ -12,6 +12,7 @@ class WeipaiingState():
     def __init__(self):
         self.worksstate = []
         self.adminname = ['两江画院', '最爱']
+        self.blackname = ['吴小钢']
 
     def ProcessingBiddingMsg(self, input):
         msg_re = re.compile('(私信?)?(\d+)[号\.+＋十、，,:：。_加 ]+(\d{2,})')
@@ -22,6 +23,8 @@ class WeipaiingState():
         except:
             return -1
         if url_search != None:
+            return -1
+        if input[1] in self.blackname:
             return -1
         try:
             msg_search = re.findall(msg_re, input[0])
@@ -299,7 +302,7 @@ class Weipai(WeipaiedState, WeipaiingState):
             self.rdata = [[0, 'wxid_x0wbwe46exmy21', self.BiddingMsgShow()], [0, self.chatroom, '本次拍卖结束，感谢大家参与！'],
                           [0, cbdata['final_from_wxid'], '拍卖结束'], [0, 'wxid_2zjxs3mstzcl22', self.BiddingMsgShow()]]
             # self.rdata = [[0, self.chatroom, '本次拍卖结束，感谢大家参与！'],
-                          # [0, cbdata['final_from_wxid'], '拍卖结束']]
+            # [0, cbdata['final_from_wxid'], '拍卖结束']]
             self.worksstate = []
             self.worksstate = []
             self.works = []
@@ -336,7 +339,14 @@ app = Flask(__name__)
 
 @app.route('/wxrobot', methods=['POST'])
 def wxrobot():
+    # req_str = request.form[0:int(request.cont)]
+    # req_data = json.loads(req_str, encoding='utf-8')
+
     cbdata = request.form.to_dict()
+
+    if cbdata == {}:
+        return 'refrash', 204
+
     print(cbdata)
     flag = wppp.ProcessingMsg(cbdata)
 
@@ -352,7 +362,7 @@ def wxrobot():
             for i in rpoststr:
                 print(i.decode())
                 requests.post('http://127.0.0.1:3800', data=i)
-    return '200'
+    return 'ok', 200
 
 
 if __name__ == '__main__':
